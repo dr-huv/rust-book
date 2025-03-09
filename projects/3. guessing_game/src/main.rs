@@ -1,23 +1,39 @@
-use std::io; //this is how we perform io operations, we need to include this in every io related program
+use std::io;
+use std::cmp::Ordering;
+use rand::Rng;
 
-fn main() {
+fn main(){
     println!("Guess the number!");
 
-    println!("Please input your guess.");
+    let secret_number = rand::thread_rng().gen_range(1..=100);
 
-    let mut guess = String::new(); //variables are immutable by default (i.e they are constants) add mut keyword to make them mutable, 
-    //String::new() is how we initialise a string data type :: is used for assosciated functions
+    loop{
+        println!("Please input your guess!");
 
-    io::stdin() //we use this for standard input from terminal
-        .read_line(&mut guess) //read_line reads in a string and stores it in guess, read_line appends to a string, it does not overwrite
-        //we are passing guess as a reference , so we use &, by using references we can save memory, also references are
-        //immutable by default so we do &mut guess instead of &guess in the argument
-        //.read_line() also returns a Result type which is an enum(canbhave multiple states) has 2 states Ok and Err
-        //Ok means operation was succesful, Err means its failed and it also stores Err information
-        .expect("Failed to read line."); //This is a method of the Result type returned by .read_line()
+        let mut guess = String::new();
+    
+        io::stdin()
+            .read_line(&mut guess)
+            .expect("Failed to read line");
 
-        //Note:- stdin() has a method read_line() this returns a Result type which has a method expect(), expect is not part of stdin()!!
+        // let guess:u32 = guess.trim().parse().expect("Please enter a valid number"); there is a better way to do this
 
-    println!("You guessed: {guess}"); 
-    // println!("You guessed: {}", guess); //We could have also done this
+        let guess:u32 = match guess.trim().parse() { //instead of using expect for the result type we are using match
+            //We are telling it what to do in case of an Ok (normal exec) or Err
+            Ok(num) => num, //this will just return num, and it will be assigned to guess
+            Err(_) => continue, //this will casue the loop to skip the current iteration and move on to the next, i.e it will ask again
+        };
+
+        println!("You guessed: {guess}");
+
+        match guess.cmp(&secret_number){
+            Ordering::Less => println!("Guess too low!"),
+            Ordering::Greater => println!("Guess too high!"),
+            Ordering::Equal => {
+                println!("You win!");
+                break; //breaks out of loop
+            }
+        }
+    }
+
 }
